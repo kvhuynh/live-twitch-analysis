@@ -43,19 +43,36 @@ const parsePopularChannels = (data: object) => {
 	console.log(data);
 };
 
+const getChannelId = async (channelName: string) => {
+	try {
+		await checkAuthorizationToken(http);
+		const res = await http.get(`/helix/users?login=${channelName}`)
+		console.log(res.data);
+		return res.data
+		
+		return res.data;
+	} catch (error: any) {
+		console.log(error);
+		
+	}
+}
+
 export const readChat = (channelName: string) => {
-	console.log(channelName);
     const io = require('../config/socket.config').getio();
 	const client = new tmi.Client({
 		channels: [channelName],
 	});
+	getChannelId(channelName);
 
+	// ping 7tv api for its emotes
 	client.connect();
 
 	let words: any = {};
+
     setInterval(() => {
         words = {}
     }, 10000)
+
 	client.on("message", (channel: any, tags: any, message: any, self: any) => {
 		// Emit message to connected clients
         const strippedMsg: string = message.split(" ")
@@ -77,12 +94,7 @@ export const readChat = (channelName: string) => {
       
         // Convert the sliced array back into an object
         const result = Object.fromEntries(top10);
-        // console.log(result);
 
-        // set a timer and reset the words after a certain period
-        
-        // return result;
-		// io.emit('message', { user: tags['display-name'], message });
         io.emit("words", result);
 
 	});
